@@ -1,3 +1,4 @@
+import { waitFor } from "@aicore-fivem/lib/shared";
 import { isFireSiren, isPowercall, manual, tone, tonesOf } from "./state";
 
 /** Sound ids and the applied level per vehicle handle, for the main siren and the airhorn / manual siren. */
@@ -68,14 +69,16 @@ function applyManual(vehicle: number, level: number): void {
 /** Plays a replicated change once the vehicle exists here (the bag can arrive first). */
 function onChange(apply: (vehicle: number, level: number) => void) {
   return (netId: number, level: number | undefined) => {
-    let tries = 0;
-    const timer = setInterval(() => {
-      const vehicle = NetworkDoesEntityExistWithNetworkId(netId)
-        ? NetToVeh(netId)
-        : 0;
-      if (vehicle || ++tries > 20) clearInterval(timer);
-      if (vehicle && !IsEntityDead(vehicle)) apply(vehicle, level ?? 0);
-    }, 100);
+    void waitFor(
+      () => NetworkDoesEntityExistWithNetworkId(netId) || undefined,
+      2000,
+      100,
+    )
+      .then(() => {
+        const vehicle = NetToVeh(netId);
+        if (vehicle && !IsEntityDead(vehicle)) apply(vehicle, level ?? 0);
+      })
+      .catch(() => {});
   };
 }
 tone.onChange(onChange(applyTone));

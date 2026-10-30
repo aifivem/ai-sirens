@@ -31,14 +31,23 @@ var SourceLock = class {
 	}
 };
 // ../../../packages/lib/src/shared/read.ts
+function num(value, fallback, min = -Infinity, max = Infinity) {
+	return typeof value == "number" && Number.isFinite(value) ? Math.min(max, Math.max(min, value)) : fallback;
+}
+function int(value, fallback, min = -Infinity, max = Infinity) {
+	return Math.round(num(value, fallback, min, max));
+}
 function bool(value, fallback) {
 	return typeof value == "boolean" ? value : fallback;
 }
 function record(value) {
 	return typeof value == "object" && value && !Array.isArray(value) ? value : {};
 }
-// ../../../packages/lib/src/shared/records.ts
-const isObject = (value) => typeof value == "object" && !!value && !Array.isArray(value);
+// ../../../packages/lib/src/shared/strict.ts
+function readInt(value, min, max) {
+	return Number.isInteger(value) && value >= min && value <= max ? value : null;
+}
+const readId = (value) => readInt(value, 1, 2147483647), isObject = (value) => typeof value == "object" && !!value && !Array.isArray(value);
 function readRecords(raw, readOne) {
 	let out = new Map();
 	if (!isObject(raw)) return out;
@@ -199,7 +208,7 @@ const CORE = {
 	clientPlayerLoadedEvent: "ai-core:client:playerLoaded",
 	clientPlayerUnloadedEvent: "ai-core:client:playerUnloaded",
 	clientCharacterPortraitEvent: "ai-core:client:characterPortrait",
-	clientCharacterLookEvent: "ai-core:client:characterLook",
+	characterLooksEvent: "ai-core:client:characterLooks",
 	clientPromptPressedEvent: "ai-core:client:promptPressed",
 	clientCacheEvent: "ai-core:client:cache",
 	clientHudVisibleEvent: "ai-core:client:hudVisible",
@@ -256,6 +265,19 @@ function loadLocaleTexts(resource = GetCurrentResourceName()) {
 }
 // ../../../packages/lib/src/fivem/callbackNames.ts
 const requestEvent = (name) => `aicore:cb:${name}`, responseEvent = (resource) => `aicore:cbr:${resource}`;
+// ../../../packages/lib/src/server/position.ts
+function entityCoords(entity) {
+	let [x = 0, y = 0, z = 0] = GetEntityCoords(entity);
+	return {
+		x,
+		y,
+		z
+	};
+}
+function isNear(source, point, metres) {
+	let [x = 0, y = 0, z = 0] = GetEntityCoords(GetPlayerPed(String(source))), dx = x - point.x, dy = y - point.y, dz = z - point.z;
+	return dx * dx + dy * dy + dz * dz <= metres * metres;
+}
 resourceExport(CORE.resource);
 const log$5 = createLogger(GetCurrentResourceName()), gates = new Set();
 on("playerDropped", () => {
@@ -365,7 +387,7 @@ function toPatch(value) {
 		default: return null;
 	}
 }
-const clone = (value) => value === void 0 ? value : JSON.parse(JSON.stringify(value)), core$13 = resourceExport(CORE.resource), ERR = {
+const clone = (value) => value === void 0 ? value : JSON.parse(JSON.stringify(value)), core$14 = resourceExport(CORE.resource), ERR = {
 	type: "ADMIN_ERR_TYPE",
 	range: "ADMIN_ERR_RANGE",
 	length: "ADMIN_ERR_LENGTH",
@@ -379,7 +401,7 @@ const clone = (value) => value === void 0 ? value : JSON.parse(JSON.stringify(va
 		if (cached && Date.now() - cached.at < 2e3) return cached.values.size > 0 ? cached.values : null;
 		let list = [];
 		try {
-			list = core$13.GetLookupValues(source);
+			list = core$14.GetLookupValues(source);
 		} catch {}
 		let values = new Set(Array.isArray(list) ? list.filter((v) => typeof v == "string") : []);
 		return this.lists.set(source, {
@@ -582,7 +604,7 @@ function writeSchema(resource, name, text, log) {
 	(0, node_fs_promises.mkdir)(dir, { recursive: !0 }).then(() => (0, node_fs_promises.writeFile)(`${dir}/${name}.schema.json`, text, "utf8")).catch((error) => log.error(`writing ${resource}/${path} failed`, error));
 }
 // ../../../packages/lib/src/server/admin/panel.ts
-const core$12 = resourceExport(CORE.resource), DEFAULT_KEY = "^[a-z0-9_]{2,32}$";
+const core$13 = resourceExport(CORE.resource), DEFAULT_KEY = "^[a-z0-9_]{2,32}$";
 function imported(spec, value) {
 	let base = clone(spec.newRecord ?? {}), out = {};
 	for (let name of Object.keys(spec.sections)) {
@@ -606,7 +628,7 @@ var AdminPanel = class {
 	constructor(schema) {
 		this.schema = schema;
 		for (let [name, spec] of Object.entries(schema.files)) this.load(name, spec);
-		registerExport("AdminPanelSnapshot", () => this.snapshot()), registerExport("AdminPanelApply", (admin, patch) => this.apply(admin, patch)), onClientCallback(ADMIN.worldChangesCallback(this.resource), () => Object.fromEntries(this.worldChanges)), setImmediate(() => core$12.RegisterAdminPanel(this.resource));
+		registerExport("AdminPanelSnapshot", () => this.snapshot()), registerExport("AdminPanelApply", (admin, patch) => this.apply(admin, patch)), onClientCallback(ADMIN.worldChangesCallback(this.resource), () => Object.fromEntries(this.worldChanges)), setImmediate(() => core$13.RegisterAdminPanel(this.resource));
 	}
 	get(file) {
 		return this.data.get(file) ?? {};
@@ -740,7 +762,7 @@ var AdminPanel = class {
 		let spec = this.schema.files[file], data = this.get(file), value = key === void 0 ? data : data[key] ?? null;
 		this.dataFiles.get(file)?.write(data), this.views.changed(file, key, value);
 		for (let handler of this.handlers.get(file) ?? []) handler(key, value);
-		if (core$12.AdminPanelChanged({
+		if (core$13.AdminPanelChanged({
 			resource: this.resource,
 			file,
 			key,
@@ -763,7 +785,7 @@ var AdminPanel = class {
 };
 resourceExport(CORE.resource);
 // ../../../packages/lib/src/server/online.ts
-const core$10 = resourceExport(CORE.resource);
+const core$11 = resourceExport(CORE.resource);
 var OnlinePlayers = class {
 	players = new Map();
 	onDuty = new Map();
@@ -772,7 +794,7 @@ var OnlinePlayers = class {
 		if (this.started) return;
 		this.started = !0;
 		let load = (source, character) => {
-			this.put(source, character, (core$10.GetJobs(source) ?? []).map((m) => m.job), (core$10.GetGangs(source) ?? []).map((m) => m.gang)), this.setDuty(source, core$10.GetDutyJob(source));
+			this.put(source, character, (core$11.GetJobs(source) ?? []).map((m) => m.job), (core$11.GetGangs(source) ?? []).map((m) => m.gang)), this.setDuty(source, core$11.GetDutyJob(source));
 		};
 		on(CORE.playerLoadedEvent, load), on(CORE.playerUnloadedEvent, (source) => this.drop(source)), on(CORE.jobsChangedEvent, (source, jobs) => {
 			let player = this.players.get(source);
@@ -781,8 +803,8 @@ var OnlinePlayers = class {
 			let player = this.players.get(source);
 			player && (player.gangs = gangs.map((m) => m.gang));
 		}), on(CORE.dutyChangedEvent, (source, job) => this.setDuty(source, job));
-		for (let source of core$10.GetLoadedSources()) {
-			let character = core$10.GetCharacter(source);
+		for (let source of core$11.GetLoadedSources()) {
+			let character = core$11.GetCharacter(source);
 			character && load(source, character);
 		}
 	}
@@ -826,7 +848,14 @@ var OnlinePlayers = class {
 	}
 };
 const EMPTY = new Set();
-new OnlinePlayers(), resourceExport(CORE.resource), resourceExport(CORE.resource), createLogger(GetCurrentResourceName());
+new OnlinePlayers(), resourceExport(CORE.resource);
+// ../../../packages/lib/src/server/vehicle.ts
+function vehicleFromNet(netId) {
+	if (readId(netId) === null) return 0;
+	let entity = NetworkGetEntityFromNetworkId(netId);
+	return entity && DoesEntityExist(entity) && GetEntityType(entity) === 2 ? entity : 0;
+}
+resourceExport(CORE.resource), createLogger(GetCurrentResourceName());
 // ../../../packages/lib/src/server/command.ts
 const resource = GetCurrentResourceName();
 createLogger(resource), new class {
@@ -924,7 +953,7 @@ var Mirror = class {
 		DoesEntityExist(entity) && (Entity(entity).state.set(this.key, value ?? null, !0), this.put(entity, value));
 	}
 };
-resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource);
+resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource), resourceExport(CORE.resource);
 // resource/common/sirens.ts
 const SIREN_BAGS = {
 	tone: "siren:lx",
@@ -949,10 +978,11 @@ const SIREN_BAGS = {
 function readSettings(raw) {
 	let s = record(raw), lightbarModels = {};
 	for (let row of Array.isArray(s.lightbarModels) ? s.lightbarModels : []) {
-		let r = record(row);
-		typeof r.mod == "number" && typeof r.model == "string" && r.model && (lightbarModels[r.mod] = r.model.toLowerCase());
+		let r = record(row), mod = int(r.mod, -1, 0, 100);
+		mod >= 0 && typeof r.model == "string" && r.model && (lightbarModels[mod] = r.model.toLowerCase());
 	}
 	return {
+		emergencyModels: names(s.emergencyModels),
 		disableDistantSirens: bool(s.disableDistantSirens, !0),
 		stopOnDriverExit: bool(s.stopOnDriverExit, !0),
 		fireSirenModels: names(s.fireSirenModels),
@@ -961,7 +991,7 @@ function readSettings(raw) {
 		onxTones: tones(s.onxTones, ONX_TONES),
 		onxModels: names(s.onxModels),
 		lightbars: bool(s.lightbars, !0),
-		lightbarMod: typeof s.lightbarMod == "number" ? s.lightbarMod : 49,
+		lightbarMod: int(s.lightbarMod, 49, 0, 49),
 		lightbarModels
 	};
 }
@@ -983,13 +1013,17 @@ const SOUND = {
 	max: 40,
 	itemMax: 32,
 	pattern: "^[a-z0-9_]+$"
-}, panel = new AdminPanel({
+}, settings = new AdminPanel({
 	title: "ADMIN_TITLE",
 	icon: "car",
 	files: { settings: {
 		kind: "settings",
 		sync: "all",
 		sections: {
+			emergencyModels: {
+				...MODELS,
+				max: 200
+			},
 			disableDistantSirens: { type: "bool" },
 			stopOnDriverExit: { type: "bool" },
 			fireSirenModels: MODELS,
@@ -1027,6 +1061,27 @@ const SOUND = {
 			}
 		},
 		defaults: {
+			emergencyModels: [
+				"ambulance",
+				"fbi",
+				"fbi2",
+				"firetruk",
+				"lguard",
+				"pbus",
+				"police",
+				"police2",
+				"police3",
+				"police4",
+				"policeb",
+				"policeold1",
+				"policeold2",
+				"policet",
+				"pranger",
+				"riot",
+				"riot2",
+				"sheriff",
+				"sheriff2"
+			],
 			disableDistantSirens: !0,
 			stopOnDriverExit: !0,
 			fireSirenModels: ["firetruk"],
@@ -1127,6 +1182,13 @@ const SOUND = {
 			title: "ADMIN_C_GENERAL",
 			desc: "ADMIN_C_GENERAL_DESC",
 			fields: [
+				{
+					widget: "tags",
+					path: "emergencyModels",
+					label: "ADMIN_F_EMERGENCY_MODELS",
+					hint: "ADMIN_H_EMERGENCY_MODELS",
+					placeholder: "ADMIN_P_MODEL"
+				},
 				{
 					widget: "switch",
 					path: "disableDistantSirens",
@@ -1261,31 +1323,47 @@ const SOUND = {
 			]
 		}]
 	}]
-});
-let settings = readSettings(panel.get("settings"));
-panel.onChange("settings", () => settings = readSettings(panel.get("settings")));
-const tone = new EntityState(SIREN_BAGS.tone, toLevel), manual = new EntityState(SIREN_BAGS.manual, toLevel), lightbar = new EntityState(SIREN_BAGS.lightbar, stateString);
-onClientEvent(EVENTS.setState, {
-	args: ([netId, key, value]) => typeof netId == "number" && typeof key == "string" ? [
-		netId,
+}).view("settings", (raw) => {
+	let s = readSettings(raw);
+	return {
+		...s,
+		emergency: new Set(s.emergencyModels.map((m) => GetHashKey(m))),
+		lightbarNames: new Set(Object.values(s.lightbarModels))
+	};
+}), tone = new EntityState(SIREN_BAGS.tone, toLevel), manual = new EntityState(SIREN_BAGS.manual, toLevel), lightbar = new EntityState(SIREN_BAGS.lightbar, stateString);
+function readRequest([netId, key, value]) {
+	let id = readId(netId);
+	if (id === null) return null;
+	if (key === SIREN_BAGS.lightbar) return value === null || typeof value == "string" && value.length <= 32 ? [{
+		netId: id,
 		key,
-		value
-	] : null,
+		model: value
+	}] : null;
+	if (key !== SIREN_BAGS.tone && key !== SIREN_BAGS.manual) return null;
+	let level = toLevel(value);
+	return level === void 0 ? null : [{
+		netId: id,
+		key,
+		level
+	}];
+}
+const isEmergency = (vehicle) => settings.value.emergency.size === 0 || settings.value.emergency.has(GetEntityModel(vehicle));
+onClientEvent(EVENTS.setState, {
+	args: readRequest,
 	rate: {
 		count: 20,
 		windowMs: 1e3
 	}
-}, (source, netId, key, value) => {
-	let vehicle = NetworkGetEntityFromNetworkId(netId);
-	if (!vehicle || !DoesEntityExist(vehicle) || GetEntityType(vehicle) !== 2) return;
-	if (key === SIREN_BAGS.lightbar) {
+}, (source, request) => {
+	let vehicle = vehicleFromNet(request.netId);
+	if (!vehicle || !isEmergency(vehicle)) return;
+	if (request.key === SIREN_BAGS.lightbar) {
+		let { model } = request;
 		if (NetworkGetEntityOwner(vehicle) !== source) return;
-		if (value == null) return lightbar.set(vehicle, void 0);
-		typeof value == "string" && Object.values(settings.lightbarModels).includes(value) && lightbar.set(vehicle, value);
+		if (model === null) return lightbar.set(vehicle, void 0);
+		settings.value.lightbarNames.has(model) && lightbar.set(vehicle, model);
 		return;
 	}
-	let level = toLevel(value);
-	if (level === void 0) return;
 	let driver = GetPedInVehicleSeat(vehicle, -1);
-	driver > 0 && driver !== GetPlayerPed(String(source)) || (key === SIREN_BAGS.tone ? tone.set(vehicle, level) : key === SIREN_BAGS.manual && manual.set(vehicle, level));
+	driver !== GetPlayerPed(String(source)) && (request.level !== 0 || driver > 0 || !isNear(source, entityCoords(vehicle), 10)) || (request.key === SIREN_BAGS.tone ? tone.set(vehicle, request.level) : manual.set(vehicle, request.level));
 });

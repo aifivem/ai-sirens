@@ -7,6 +7,17 @@
       "type": "string",
       "description": "This file's JSON Schema (for editors)."
     },
+    "emergencyModels": {
+      "description": "Emergency vehicle models: Only these models get sirens, airhorn and lightbars; add your add-on police, fire and ambulance cars here. Empty: every emergency class vehicle.",
+      "type": "array",
+      "maxItems": 200,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "maxLength": 32,
+        "pattern": "^[a-z0-9_]+$"
+      }
+    },
     "disableDistantSirens": {
       "description": "No distant sirens: Silences GTA's far away police sirens that play on their own.",
       "type": "boolean"

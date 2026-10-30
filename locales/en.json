@@ -12,6 +12,8 @@
   "ADMIN_H_DISTANT": "Silences GTA's far away police sirens that play on their own.",
   "ADMIN_F_STOP_EXIT": "Siren stops when the driver gets out",
   "ADMIN_H_STOP_EXIT": "On: leaving the driver seat turns the siren sound off (the lights stay).",
+  "ADMIN_F_EMERGENCY_MODELS": "Emergency vehicle models",
+  "ADMIN_H_EMERGENCY_MODELS": "Only these models get sirens, airhorn and lightbars; add your add-on police, fire and ambulance cars here. Empty: every emergency class vehicle.",
   "ADMIN_F_FIRE_MODELS": "Firetruck models",
   "ADMIN_H_FIRE_MODELS": "These keep their own wail on tone 1, their airhorn and tone 3 are the fire truck sounds.",
   "ADMIN_F_POWERCALL": "Ambulance tone models",

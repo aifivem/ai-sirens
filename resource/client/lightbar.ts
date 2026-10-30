@@ -1,6 +1,7 @@
-import { requestModel } from "@aicore-fivem/lib/client";
+import { cache, onCache, requestModel } from "@aicore-fivem/lib/client";
+import { ResourceName } from "common";
 import { SIREN_BAGS } from "common/sirens";
-import { ask, content, lightbar, stateOf } from "./state";
+import { ask, isEmergency, lightbar, settings, stateOf } from "./state";
 
 /**
  * ONX lightbars: every client spawns its own non-networked lightbar on vehicles in scope from the replicated model
@@ -68,27 +69,38 @@ lightbar.onChange((netId, model) => {
   if (current && current.model === model && DoesEntityExist(current.entity))
     return;
   remove(vehicle);
-  if (model && content.settings.lightbars) void spawn(vehicle, model, gen);
+  if (model && settings.value.lightbars) void spawn(vehicle, model, gen);
 });
 
-// Owner side: the lightbar model follows the vehicle's tuning mod slot.
-setInterval(() => {
-  const s = content.settings;
-  if (!s.lightbars) return;
-  const me = PlayerId();
-  for (const vehicle of GetGamePool("CVehicle") as number[]) {
-    if (
-      GetVehicleClass(vehicle) !== 18 ||
-      !NetworkGetEntityIsNetworked(vehicle) ||
-      NetworkGetEntityOwner(vehicle) !== me
-    )
-      continue;
-    const mod = GetVehicleMod(vehicle, s.lightbarMod);
-    const expected = mod > 1 ? (s.lightbarModels[mod] ?? null) : null;
-    if ((stateOf(vehicle, SIREN_BAGS.lightbar) ?? null) !== expected)
-      ask(vehicle, SIREN_BAGS.lightbar, expected);
-  }
-}, 1000);
+/** Owner side: the lightbar model follows the tuning mod slot of the emergency vehicle the player drives (its owner). */
+function publish(vehicle: number): void {
+  const s = settings.value;
+  if (!s.lightbars || NetworkGetEntityOwner(vehicle) !== cache.playerId) return;
+  const mod = GetVehicleMod(vehicle, s.lightbarMod);
+  const expected = mod > 1 ? (s.lightbarModels[mod] ?? null) : null;
+  if ((stateOf(vehicle, SIREN_BAGS.lightbar) ?? null) !== expected)
+    ask(vehicle, SIREN_BAGS.lightbar, expected);
+}
+
+/** Runs only while the player drives a networked emergency vehicle (a tuning change shows within a second). */
+let publisher: ReturnType<typeof setInterval> | undefined;
+function watchDriven(): void {
+  const vehicle =
+    cache.seat === -1 &&
+    cache.vehicle !== false &&
+    NetworkGetEntityIsNetworked(cache.vehicle) &&
+    isEmergency(cache.vehicle)
+      ? cache.vehicle
+      : 0;
+  if (publisher !== undefined) clearInterval(publisher);
+  publisher = undefined;
+  if (!vehicle) return;
+  publish(vehicle);
+  publisher = setInterval(() => publish(vehicle), 1000);
+}
+onCache("vehicle", watchDriven);
+onCache("seat", watchDriven);
+watchDriven();
 
 // Lights mirror onto the lightbar; lightbars of vehicles that are gone go too.
 setInterval(() => {
@@ -106,6 +118,6 @@ setInterval(() => {
 }, 250);
 
 on("onResourceStop", (resource: string) => {
-  if (resource === GetCurrentResourceName())
-    for (const vehicle of [...attached.keys()]) remove(vehicle);
+  if (resource === ResourceName)
+    for (const vehicle of attached.keys()) remove(vehicle);
 });

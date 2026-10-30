@@ -1,4 +1,4 @@
-import { bool, record } from "@aicore-fivem/lib/shared";
+import { bool, int, record } from "@aicore-fivem/lib/shared";
 
 /** Vehicle state bags (written by the server after its checks; every client in scope plays them). */
 export const SIREN_BAGS = {
@@ -27,6 +27,8 @@ export interface ToneSet {
 }
 
 export interface Settings {
+  /** Models whose sirens the server accepts (empty: every model). */
+  emergencyModels: string[];
   disableDistantSirens: boolean;
   stopOnDriverExit: boolean;
   /** Models keeping their real wail from vehicles.meta (firetrucks). */
@@ -76,10 +78,12 @@ export function readSettings(raw: unknown): Settings {
   const lightbarModels: Record<number, string> = {};
   for (const row of Array.isArray(s.lightbarModels) ? s.lightbarModels : []) {
     const r = record(row);
-    if (typeof r.mod === "number" && typeof r.model === "string" && r.model)
-      lightbarModels[r.mod] = r.model.toLowerCase();
+    const mod = int(r.mod, -1, 0, 100);
+    if (mod >= 0 && typeof r.model === "string" && r.model)
+      lightbarModels[mod] = r.model.toLowerCase();
   }
   return {
+    emergencyModels: names(s.emergencyModels),
     disableDistantSirens: bool(s.disableDistantSirens, true),
     stopOnDriverExit: bool(s.stopOnDriverExit, true),
     fireSirenModels: names(s.fireSirenModels),
@@ -88,7 +92,7 @@ export function readSettings(raw: unknown): Settings {
     onxTones: tones(s.onxTones, ONX_TONES),
     onxModels: names(s.onxModels),
     lightbars: bool(s.lightbars, true),
-    lightbarMod: typeof s.lightbarMod === "number" ? s.lightbarMod : 49,
+    lightbarMod: int(s.lightbarMod, 49, 0, 49),
     lightbarModels,
   };
 }

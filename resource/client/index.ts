@@ -10,11 +10,19 @@ import { SIREN_BAGS } from "common/sirens";
 import "./exports";
 import { lightbarOf } from "./lightbar";
 import "./sounds";
-import { ask, content, isFireSiren, stateOf } from "./state";
+import {
+  ask,
+  isEmergency,
+  isFireSiren,
+  settings,
+  stateOf,
+  world,
+  type SirenKey,
+} from "./state";
 
 /** Horn, radio and cinematic camera keys while driving an emergency vehicle (the siren keys take their place). */
 const BLOCKED = [86, 81, 82, 85, 80, 83, 84];
-const level = (vehicle: number, key: string) => {
+const level = (vehicle: number, key: SirenKey) => {
   const v = stateOf(vehicle, key);
   return typeof v === "number" ? v : 0;
 };
@@ -31,7 +39,7 @@ const click = (vehicle: number, up: boolean) =>
 const driven = () =>
   cache.seat === -1 &&
   cache.vehicle !== false &&
-  GetVehicleClass(cache.vehicle) === 18 &&
+  isEmergency(cache.vehicle) &&
   !IsPauseMenuActive()
     ? cache.vehicle
     : 0;
@@ -145,7 +153,7 @@ onCache("seat", () => {
   last = cache.vehicle;
   if (
     before &&
-    content.settings.stopOnDriverExit &&
+    settings.value.stopOnDriverExit &&
     DoesEntityExist(before) &&
     level(before, SIREN_BAGS.tone) > 0 &&
     GetPedInVehicleSeat(before, -1) !== cache.ped
@@ -156,7 +164,8 @@ onCache("seat", () => {
 onCache("vehicle", update);
 update();
 
-setInterval(
-  () => content.settings.disableDistantSirens && DistantCopCarSirens(false),
-  1000,
-);
+// The game keeps this switch: set once and again when the panel turns it on (`true` would force fake sirens).
+const distantSirens = () =>
+  settings.value.disableDistantSirens && DistantCopCarSirens(false);
+distantSirens();
+world.onChange("settings", distantSirens);

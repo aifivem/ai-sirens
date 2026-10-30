@@ -1,16 +1,17 @@
 import { cache, registerExport } from "@aicore-fivem/lib/client";
+import { readInt } from "@aicore-fivem/lib/shared";
 import { SIREN_BAGS } from "common/sirens";
 import { lightbarOf } from "./lightbar";
-import { ask, stateOf } from "./state";
+import { ask, isEmergency, stateOf, type SirenKey } from "./state";
 
 /** Siren control for other scripts, the same as the keys; state changes work on the driver's client. */
 const vehicleOf = (v: unknown): number => {
   const vehicle = typeof v === "number" ? v : cache.vehicle;
-  return vehicle && DoesEntityExist(vehicle) && GetVehicleClass(vehicle) === 18
+  return vehicle && DoesEntityExist(vehicle) && isEmergency(vehicle)
     ? vehicle
     : 0;
 };
-const level = (vehicle: number, key: string) => {
+const level = (vehicle: number, key: SirenKey) => {
   const v = stateOf(vehicle, key);
   return typeof v === "number" ? v : 0;
 };
@@ -32,10 +33,11 @@ registerExport("ToggleLights", (v: unknown) => {
 });
 registerExport("SetSirenTone", (v: unknown, tone: unknown) => {
   const vehicle = vehicleOf(v);
-  if (!vehicle || typeof tone !== "number" || tone < 0 || tone > 3)
-    return false;
-  if (tone > 0 && !IsVehicleSirenOn(vehicle)) setLights(vehicle, true);
-  ask(vehicle, SIREN_BAGS.tone, Math.floor(tone));
+  const value =
+    typeof tone === "number" ? readInt(Math.floor(tone), 0, 3) : null;
+  if (!vehicle || value === null) return false;
+  if (value > 0 && !IsVehicleSirenOn(vehicle)) setLights(vehicle, true);
+  ask(vehicle, SIREN_BAGS.tone, value);
   return true;
 });
 registerExport("ToggleSiren", (v: unknown) => {
