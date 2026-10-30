@@ -1,4 +1,10 @@
-import { cache, onCache, requestModel } from "@aicore-fivem/lib/client";
+import {
+  cache,
+  every,
+  type Job,
+  onCache,
+  requestModel,
+} from "@aicore-fivem/lib/client";
 import { ResourceName } from "common";
 import { SIREN_BAGS } from "common/sirens";
 import { ask, isEmergency, lightbar, settings, stateOf } from "./state";
@@ -83,7 +89,7 @@ function publish(vehicle: number): void {
 }
 
 /** Runs only while the player drives a networked emergency vehicle (a tuning change shows within a second). */
-let publisher: ReturnType<typeof setInterval> | undefined;
+let publisher: Job | undefined;
 function watchDriven(): void {
   const vehicle =
     cache.seat === -1 &&
@@ -92,18 +98,18 @@ function watchDriven(): void {
     isEmergency(cache.vehicle)
       ? cache.vehicle
       : 0;
-  if (publisher !== undefined) clearInterval(publisher);
+  publisher?.stop();
   publisher = undefined;
   if (!vehicle) return;
   publish(vehicle);
-  publisher = setInterval(() => publish(vehicle), 1000);
+  publisher = every(1000, () => publish(vehicle), { name: "lightbarPublish" });
 }
 onCache("vehicle", watchDriven);
 onCache("seat", watchDriven);
 watchDriven();
 
 // Lights mirror onto the lightbar; lightbars of vehicles that are gone go too.
-setInterval(() => {
+every(250, function lightbars() {
   for (const [vehicle, a] of attached) {
     if (
       !DoesEntityExist(vehicle) ||
@@ -115,7 +121,7 @@ setInterval(() => {
     } else if (IsVehicleSirenOn(a.entity) !== IsVehicleSirenOn(vehicle))
       SetVehicleSiren(a.entity, IsVehicleSirenOn(vehicle));
   }
-}, 250);
+});
 
 on("onResourceStop", (resource: string) => {
   if (resource === ResourceName)

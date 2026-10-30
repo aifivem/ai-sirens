@@ -1,4 +1,4 @@
-import { waitFor } from "@aicore-fivem/lib/shared";
+import { every, waitForEntity } from "@aicore-fivem/lib/client";
 import { isFireSiren, isPowercall, manual, tone, tonesOf } from "./state";
 
 /** Sound ids and the applied level per vehicle handle, for the main siren and the airhorn / manual siren. */
@@ -69,23 +69,16 @@ function applyManual(vehicle: number, level: number): void {
 /** Plays a replicated change once the vehicle exists here (the bag can arrive first). */
 function onChange(apply: (vehicle: number, level: number) => void) {
   return (netId: number, level: number | undefined) => {
-    void waitFor(
-      () => NetworkDoesEntityExistWithNetworkId(netId) || undefined,
-      2000,
-      100,
-    )
-      .then(() => {
-        const vehicle = NetToVeh(netId);
-        if (vehicle && !IsEntityDead(vehicle)) apply(vehicle, level ?? 0);
-      })
-      .catch(() => {});
+    void waitForEntity(netId, 2000).then((vehicle) => {
+      if (vehicle && !IsEntityDead(vehicle)) apply(vehicle, level ?? 0);
+    });
   };
 }
 tone.onChange(onChange(applyTone));
 manual.onChange(onChange(applyManual));
 
 // Sounds of vehicles that despawned, died or lost their driver (airhorn) stop.
-setInterval(() => {
+every(500, function stopGoneSounds() {
   for (const pool of ["tone", "manual"] as const)
     for (const vehicle of pools[pool].applied.keys()) {
       const gone =
@@ -96,4 +89,4 @@ setInterval(() => {
       stop(pool, vehicle);
       pools[pool].applied.delete(vehicle);
     }
-}, 500);
+});
