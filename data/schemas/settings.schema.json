@@ -1,0 +1,152 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ai-sirens/data/settings.json",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "This file's JSON Schema (for editors)."
+    },
+    "disableDistantSirens": {
+      "description": "No distant sirens: Silences GTA's far away police sirens that play on their own.",
+      "type": "boolean"
+    },
+    "stopOnDriverExit": {
+      "description": "Siren stops when the driver gets out: On: leaving the driver seat turns the siren sound off (the lights stay).",
+      "type": "boolean"
+    },
+    "fireSirenModels": {
+      "description": "Firetruck models: These keep their own wail on tone 1, their airhorn and tone 3 are the fire truck sounds.",
+      "type": "array",
+      "maxItems": 40,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "maxLength": 32,
+        "pattern": "^[a-z0-9_]+$"
+      }
+    },
+    "powercallModels": {
+      "description": "Ambulance tone models: Tone 1 of these models plays the ambulance powercall.",
+      "type": "array",
+      "maxItems": 40,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "maxLength": 32,
+        "pattern": "^[a-z0-9_]+$"
+      }
+    },
+    "defaultTones": {
+      "type": "object",
+      "properties": {
+        "tone1": {
+          "description": "Tone 1",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Z0-9_]+$"
+        },
+        "tone2": {
+          "description": "Tone 2",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Z0-9_]+$"
+        },
+        "tone3": {
+          "description": "Tone 3",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Z0-9_]+$"
+        }
+      },
+      "required": [
+        "tone1",
+        "tone2",
+        "tone3"
+      ]
+    },
+    "onxTones": {
+      "type": "object",
+      "properties": {
+        "tone1": {
+          "description": "Tone 1",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Z0-9_]+$"
+        },
+        "tone2": {
+          "description": "Tone 2",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Z0-9_]+$"
+        },
+        "tone3": {
+          "description": "Tone 3",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Z0-9_]+$"
+        }
+      },
+      "required": [
+        "tone1",
+        "tone2",
+        "tone3"
+      ]
+    },
+    "onxModels": {
+      "description": "Models with ONX tones: These always use the ONX tones; vehicles with an ONX lightbar use them anyway.",
+      "type": "array",
+      "maxItems": 40,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "maxLength": 32,
+        "pattern": "^[a-z0-9_]+$"
+      }
+    },
+    "lightbars": {
+      "description": "Attach lightbars: Off: no lightbars are attached.",
+      "type": "boolean"
+    },
+    "lightbarMod": {
+      "description": "Tuning slot: The vehicle mod slot that picks the lightbar (49 in the ONX pack).",
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 49
+    },
+    "lightbarModels": {
+      "description": "Lightbar per slot value: Which lightbar model each value of the tuning slot attaches.",
+      "type": "array",
+      "maxItems": 40,
+      "items": {
+        "type": "object",
+        "properties": {
+          "mod": {
+            "description": "Slot value",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "model": {
+            "description": "Lightbar model",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[a-z0-9_]+$"
+          }
+        },
+        "required": [
+          "mod",
+          "model"
+        ]
+      }
+    }
+  },
+  "required": []
+}

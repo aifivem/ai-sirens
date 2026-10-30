@@ -1,0 +1,92 @@
+{
+  "$schema": "./schemas/settings.schema.json",
+  "disableDistantSirens": true,
+  "stopOnDriverExit": true,
+  "fireSirenModels": [
+    "firetruk"
+  ],
+  "powercallModels": [
+    "ambulance",
+    "firetruk",
+    "lguard"
+  ],
+  "defaultTones": {
+    "tone1": "VEHICLES_HORNS_SIREN_1",
+    "tone2": "VEHICLES_HORNS_SIREN_2",
+    "tone3": "VEHICLES_HORNS_POLICE_WARNING"
+  },
+  "onxTones": {
+    "tone1": "RESIDENT_VEHICLES_SIREN_WAIL_02",
+    "tone2": "RESIDENT_VEHICLES_SIREN_QUICK_02",
+    "tone3": "VEHICLES_HORNS_POLICE_WARNING"
+  },
+  "onxModels": [],
+  "lightbars": true,
+  "lightbarMod": 49,
+  "lightbarModels": [
+    {
+      "mod": 4,
+      "model": "onx_pol_lbar_mdn1a"
+    },
+    {
+      "mod": 5,
+      "model": "onx_pol_lbar_mdn1b"
+    },
+    {
+      "mod": 6,
+      "model": "onx_pol_lbar_mdn1c"
+    },
+    {
+      "mod": 7,
+      "model": "onx_pol_lbar_mdn2a"
+    },
+    {
+      "mod": 8,
+      "model": "onx_pol_lbar_os1a"
+    },
+    {
+      "mod": 9,
+      "model": "onx_pol_lbar_os2a"
+    },
+    {
+      "mod": 10,
+      "model": "onx_pol_lbar_os2b"
+    },
+    {
+      "mod": 11,
+      "model": "onx_pol_lbar_os3a"
+    },
+    {
+      "mod": 12,
+      "model": "onx_pol_lbar_mdn3a"
+    },
+    {
+      "mod": 13,
+      "model": "onx_pol_lbar_mdn3b"
+    },
+    {
+      "mod": 14,
+      "model": "onx_ems_lbar_mdn1a"
+    },
+    {
+      "mod": 15,
+      "model": "onx_ems_lbar_mdn1b"
+    },
+    {
+      "mod": 16,
+      "model": "onx_ems_lbar_mdn1c"
+    },
+    {
+      "mod": 17,
+      "model": "onx_amb_lbar_mdn1a"
+    },
+    {
+      "mod": 18,
+      "model": "onx_amb_lbar_mdn1b"
+    },
+    {
+      "mod": 19,
+      "model": "onx_amb_lbar_mdn1c"
+    }
+  ]
+}
