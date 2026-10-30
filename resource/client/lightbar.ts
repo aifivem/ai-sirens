@@ -62,6 +62,7 @@ async function spawn(
   FreezeEntityPosition(entity, true);
   SetEntityCollision(entity, false, false);
   attached.set(vehicle, { entity, model });
+  lightbarJob.set(true);
 }
 
 lightbar.onChange((netId, model) => {
@@ -109,7 +110,8 @@ onCache("seat", watchDriven);
 watchDriven();
 
 // Lights mirror onto the lightbar; lightbars of vehicles that are gone go too.
-every(250, function lightbars() {
+// Runs only while a lightbar is attached.
+const lightbarJob = every(250, function lightbars() {
   for (const [vehicle, a] of attached) {
     if (
       !DoesEntityExist(vehicle) ||
@@ -121,6 +123,7 @@ every(250, function lightbars() {
     } else if (IsVehicleSirenOn(a.entity) !== IsVehicleSirenOn(vehicle))
       SetVehicleSiren(a.entity, IsVehicleSirenOn(vehicle));
   }
+  if (attached.size === 0) lightbarJob.set(false);
 });
 
 on("onResourceStop", (resource: string) => {

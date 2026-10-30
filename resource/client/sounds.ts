@@ -47,6 +47,7 @@ function applyTone(vehicle: number, level: number): void {
       isFireSiren(vehicle) ? "VEHICLES_HORNS_AMBULANCE_WARNING" : tones.tone3,
     );
   pools.tone.applied.set(vehicle, level);
+  goneJob.set(true);
 }
 
 function applyManual(vehicle: number, level: number): void {
@@ -64,6 +65,7 @@ function applyManual(vehicle: number, level: number): void {
   else if (level === 2) play("manual", vehicle, tones.tone1);
   else if (level === 3) play("manual", vehicle, tones.tone2);
   pools.manual.applied.set(vehicle, level);
+  goneJob.set(true);
 }
 
 /** Plays a replicated change once the vehicle exists here (the bag can arrive first). */
@@ -74,11 +76,10 @@ function onChange(apply: (vehicle: number, level: number) => void) {
     });
   };
 }
-tone.onChange(onChange(applyTone));
-manual.onChange(onChange(applyManual));
 
 // Sounds of vehicles that despawned, died or lost their driver (airhorn) stop.
-every(500, function stopGoneSounds() {
+// Runs only while a sound is applied.
+const goneJob = every(500, function stopGoneSounds() {
   for (const pool of ["tone", "manual"] as const)
     for (const vehicle of pools[pool].applied.keys()) {
       const gone =
@@ -89,4 +90,9 @@ every(500, function stopGoneSounds() {
       stop(pool, vehicle);
       pools[pool].applied.delete(vehicle);
     }
+  if (pools.tone.applied.size === 0 && pools.manual.applied.size === 0)
+    goneJob.set(false);
 });
+
+tone.onChange(onChange(applyTone));
+manual.onChange(onChange(applyManual));
