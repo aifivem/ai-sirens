@@ -1,6 +1,7 @@
 import {
   cache,
   controls,
+  drivenVehicle,
   Keybind,
   onCache,
   TickLoop,
@@ -36,13 +37,12 @@ const click = (vehicle: number, up: boolean) =>
     0,
   );
 /** The emergency vehicle the player drives, or 0. */
-const driven = () =>
-  cache.seat === -1 &&
-  cache.vehicle !== false &&
-  isEmergency(cache.vehicle) &&
-  !IsPauseMenuActive()
-    ? cache.vehicle
+const driven = (): number => {
+  const vehicle = drivenVehicle();
+  return vehicle !== false && isEmergency(vehicle) && !IsPauseMenuActive()
+    ? vehicle
     : 0;
+};
 
 const keys = {
   lights: new Keybind({

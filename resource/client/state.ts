@@ -1,4 +1,9 @@
-import { AdminWorld, EntityState, stateString } from "@aicore-fivem/lib/client";
+import {
+  AdminWorld,
+  entityFromNetId,
+  EntityState,
+  stateString,
+} from "@aicore-fivem/lib/client";
 import { EVENTS, readSettings, SIREN_BAGS, toLevel } from "common/sirens";
 
 const hashes = (models: string[]) => new Set(models.map((m) => GetHashKey(m)));
@@ -65,9 +70,7 @@ for (const [state, key] of [
   [lightbar, SIREN_BAGS.lightbar],
 ] as const)
   (state as EntityState<number | string>).onChange((netId) => {
-    const vehicle = NetworkDoesEntityExistWithNetworkId(netId)
-      ? NetToVeh(netId)
-      : 0;
+    const vehicle = entityFromNetId(netId, 2);
     if (vehicle) asked.delete(vehicle * 4 + SLOTS[key]);
   });
 

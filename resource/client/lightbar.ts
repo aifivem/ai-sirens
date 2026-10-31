@@ -1,11 +1,13 @@
 import {
   cache,
+  drivenVehicle,
+  entityFromNetId,
   every,
   type Job,
   onCache,
+  onStop,
   requestModel,
 } from "@aicore-fivem/lib/client";
-import { ResourceName } from "common";
 import { SIREN_BAGS } from "common/sirens";
 import { ask, isEmergency, lightbar, settings, stateOf } from "./state";
 
@@ -66,9 +68,7 @@ async function spawn(
 }
 
 lightbar.onChange((netId, model) => {
-  const vehicle = NetworkDoesEntityExistWithNetworkId(netId)
-    ? NetToVeh(netId)
-    : 0;
+  const vehicle = entityFromNetId(netId, 2);
   if (!vehicle) return;
   const gen = (generation.get(vehicle) ?? 0) + 1;
   generation.set(vehicle, gen);
@@ -92,12 +92,12 @@ function publish(vehicle: number): void {
 /** Runs only while the player drives a networked emergency vehicle (a tuning change shows within a second). */
 let publisher: Job | undefined;
 function watchDriven(): void {
+  const driven = drivenVehicle();
   const vehicle =
-    cache.seat === -1 &&
-    cache.vehicle !== false &&
-    NetworkGetEntityIsNetworked(cache.vehicle) &&
-    isEmergency(cache.vehicle)
-      ? cache.vehicle
+    driven !== false &&
+    NetworkGetEntityIsNetworked(driven) &&
+    isEmergency(driven)
+      ? driven
       : 0;
   publisher?.stop();
   publisher = undefined;
@@ -126,7 +126,6 @@ const lightbarJob = every(250, function lightbars() {
   if (attached.size === 0) lightbarJob.set(false);
 });
 
-on("onResourceStop", (resource: string) => {
-  if (resource === ResourceName)
-    for (const vehicle of attached.keys()) remove(vehicle);
+onStop(() => {
+  for (const vehicle of attached.keys()) remove(vehicle);
 });
