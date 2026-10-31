@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/aifivem/ai-sirens/compare/v0.1.1...v0.1.2) (2026-10-31)
+
+
+### Miscellaneous Chores
+
+* rebuild with the current lib ([744d266](https://github.com/aifivem/ai-sirens/commit/744d26649515b31e549d85ccc729d73df09f65bb))
+
 ## [0.1.1](https://github.com/aifivem/ai-sirens/compare/v0.1.0...v0.1.1) (2026-10-31)
 
 
