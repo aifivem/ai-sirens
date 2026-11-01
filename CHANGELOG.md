@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/aifivem/ai-sirens/compare/v0.1.2...v0.1.3) (2026-11-01)
+
+
+### Code Refactoring
+
+* feature folders, side entries that only import, panel schema per tab ([a1ce28d](https://github.com/aifivem/ai-sirens/commit/a1ce28d18056899497c5834d41a335754138164c))
+
 ## [0.1.2](https://github.com/aifivem/ai-sirens/compare/v0.1.1...v0.1.2) (2026-10-31)
 
 
