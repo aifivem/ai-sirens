@@ -17,4 +17,4 @@ Emergency vehicle (class 18) lights, three siren tones, airhorn and manual siren
 
 ## Entry points
 
-- Server checks `resource/server/index.ts`, panel `server/schema.ts`; client keys and driver loop `resource/client/index.ts`, sounds `client/sounds.ts`, lightbars `client/lightbar.ts`.
+- Server checks `resource/server/requests.ts`, panel `server/schema/`; client keys `resource/client/driver/keys.ts` and driver loop `client/driver/index.ts`, distant sirens switch `client/distantSirens.ts`, sounds `client/sounds.ts`, lightbars `client/lightbar.ts`.
