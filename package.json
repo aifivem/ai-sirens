@@ -1,6 +1,6 @@
 {
   "name": "ai-sirens",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "private": true,
   "description": "Emergency vehicle lights, siren tones, airhorn and ONX lightbars",
   "license": "GPL-3.0-only",
