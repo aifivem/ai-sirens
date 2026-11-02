@@ -1,5 +1,5 @@
-import { cache, registerExport } from "@aicore-fivem/lib/client";
-import { readInt } from "@aicore-fivem/lib/shared";
+import { cache, registerExport } from "@aifivem/lib/client";
+import { readInt } from "@aifivem/lib/shared";
 import { SIREN_BAGS } from "common/sirens";
 import { lightbarOf } from "./lightbar";
 import { ask, isEmergency, stateOf, type SirenKey } from "./state";

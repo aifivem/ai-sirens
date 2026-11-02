@@ -1,4 +1,4 @@
-import { bool, int, record } from "@aicore-fivem/lib/shared";
+import { bool, int, record } from "@aifivem/lib/shared";
 
 /** Vehicle state bags (written by the server after its checks; every client in scope plays them). */
 export const SIREN_BAGS = {

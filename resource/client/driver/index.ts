@@ -1,4 +1,4 @@
-import { cache, controls, onCache, TickLoop } from "@aicore-fivem/lib/client";
+import { cache, controls, onCache, TickLoop } from "@aifivem/lib/client";
 import { SIREN_BAGS } from "common/sirens";
 import { ask, isFireSiren, settings, stateOf } from "../state";
 import { driven, keys, level } from "./keys";

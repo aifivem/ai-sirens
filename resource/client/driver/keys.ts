@@ -1,4 +1,4 @@
-import { drivenVehicle, Keybind } from "@aicore-fivem/lib/client";
+import { drivenVehicle, Keybind } from "@aifivem/lib/client";
 import { Locale } from "common";
 import { SIREN_BAGS } from "common/sirens";
 import { lightbarOf } from "../lightbar";
