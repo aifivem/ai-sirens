@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/aifivem/ai-sirens/compare/v0.1.3...v0.1.4) (2026-11-02)
+
+
+### Code Refactoring
+
+* import the shared packages from [@aifivem](https://github.com/aifivem) ([5e9035b](https://github.com/aifivem/ai-sirens/commit/5e9035b9d6a3862d83e74911fac2988a5d99da32))
+
 ## [0.1.3](https://github.com/aifivem/ai-sirens/compare/v0.1.2...v0.1.3) (2026-11-01)
 
 
