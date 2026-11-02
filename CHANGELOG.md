@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.5](https://github.com/aifivem/ai-sirens/compare/v0.1.4...v0.1.5) (2026-11-02)
+
+
+### Documentation
+
+* install from the release zip ([f74740e](https://github.com/aifivem/ai-sirens/commit/f74740e2980d9ca80ea9e38fa13c58e809788a08))
+
+
+### Miscellaneous Chores
+
+* build files are no longer in git, the release zip carries them ([ba22c6e](https://github.com/aifivem/ai-sirens/commit/ba22c6efe1124213c406e356e45eac6e7a5dbc74))
+
 ## [0.1.4](https://github.com/aifivem/ai-sirens/compare/v0.1.3...v0.1.4) (2026-11-02)
 
 
